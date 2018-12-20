@@ -1,0 +1,57 @@
+# [翻译]-Angular7中使用switchMap改善导航
+
+> 原文链接: **[Improved Navigation in Angular 7 with switchMap](https://blog.angularindepth.com/new-in-angular-7-better-navigations-79267db452c0)**
+> 原文作者: **[Max Koretskyi](https://blog.angularindepth.com/@maxim.koretskyi)**，原技术博文由 `Max Koretskyi` 撰写发布，他目前于 **[ag-Grid](https://angular-grid.ag-grid.com/?utm_source=medium&utm_medium=blog&utm_campaign=angularcustom)** 担任开发大使。
+> 译者按：开发大使负责确保其所在的公司认真听取社区的声音并向社区传达他们的行动及目标，其作为社区和公司之间的纽带存在。
+> 译者: **[Sunny Liu](https://segmentfault.com/u/lx1036/articles)**；校对者：
+
+![Pushing Devils](../assets/angular-149/1.jpeg)
+
+> 注：想要看看 RxJS 的 **switchMap** 操作符的神奇之处，已经如何被 Angular 路由器神奇般的使用，可以深入研究本文提到的这个 PR **[#25740](https://github.com/angular/angular/commit/b7baf632c0161692f15d13f718329ab54a0f938a)**。
+
+
+由于 PR **[#25740](https://github.com/angular/angular/commit/b7baf632c0161692f15d13f718329ab54a0f938a)**，Angular 路由器的所有导航被合并为一个 observable 流，导致任意时刻只存在一次有效的导航。这个 PR 会对我们的代码造成影响，也会让导航更快，更可预测。
+
+> 这个 PR 是对路由器之前工作方式的一次大重构。这次重构会带来一系列重大好处，也会是后续功能的基石。
+
+这次 PR 随着 Angular 7 一起发布，本文将会研究这个 PR，看看 PR 究竟做了什么。我们也将看到 **switchMap** 操作符是如何使得任意时刻只存在一次导航。
+
+## 理解导航
+当 URL 发生变化时，就会发生一次导航，而这个 URL 变化可能是一次命令式行为触发的（如使用 **[navigate()](https://github.com/angular/angular/blob/7.1.4/packages/router/src/router.ts#L841-L869)** 或者 **[navigateByUrl()](https://github.com/angular/angular/blob/7.1.4/packages/router/src/router.ts#L804-L839)**，或者 **[返回 UrlTree 的路由守卫](https://blog.angularindepth.com/new-in-angular-v7-1-updates-to-the-router-fd67d526ad05)**），也可能是类似用户点击 **[routerLink]** 指令等行为触发的。
+
+一旦导航开始，路由器就会依次执行以下几个步骤：
+1. 执行重定向
+2. 匹配 URL 和路由路径
+3. 运行路由守卫和 Resolver
+4. 渲染组件并更新浏览器状态栏（注：浏览器 **[location](https://developer.mozilla.org/zh-CN/docs/Web/API/Location)** 对象）
+
+**[如果你想详细知道每一步的具体细节，可以看看我写的一篇文章。](https://blog.angularindepth.com/angular-router-series-pillar-2-navigation-d050286bf4fa)**
+
+## 现存的问题
+在 PR **[#25740](https://github.com/angular/angular/commit/b7baf632c0161692f15d13f718329ab54a0f938a)** 之前，任意时刻可能出现多次导航。不难想象，这会引发一些诡异的问题。比如下面这个场景：
+* 用户点击 X 连接，一次新导航 1 开始了。
+* 在导航到 X 完成前，会运行路由守卫和 resolvers，这些都是异步操作，可能需要 10 秒才完成。
+* 在这 10 秒内，用户厌烦了，立刻点击 Y 连接，又开始了一次的新导航 2。
+* 导航 2 必须等待导航 1 运行完路由守卫和 resolvers，而实际上导航 1 的这些运行结果又将会被忽视掉。
+* 甚至导航 2 在等待过程中，导航 1 的某个路由守卫运行失败了，出现了重定向，这时天知道用户最终被导航到哪里去了。
+
+Jason Aden 在 **[AngularConnect 2018 上具体讨论过这个问题](https://www.youtube.com/watch?v=MMPl9wHzmS4&feature=youtu.be&t=1563)**，我建议去瞅瞅他具体说了啥。
+
+总之，不管是在框架内还是框架外，同时管理多个导航是很糟糕的。但是由于 PR **[#25740](https://github.com/angular/angular/commit/b7baf632c0161692f15d13f718329ab54a0f938a)**，现在任何时刻只有一个有效的导航。我们将会看到，这个 PR 简化了很多事情，并让导航更容易理解。
+
+## 修改
+
+
+## 详细细节
+
+
+## 好处
+
+
+## 总结
+
+
+
+
+
+
